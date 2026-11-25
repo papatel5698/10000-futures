@@ -74,3 +74,27 @@ describe('FI helpers', () => {
     expect(contributionFromCashFlow(30_000, 100_000, 80_000)).toBe(50_000)
   })
 })
+
+describe('a non-default firm config', () => {
+  // Matches clients/example-wealth.json: a cautious 60/40 firm with lower return assumptions.
+  const cautious = { ...DEFAULT_MARKET, stockShare: 0.6, stockReturn: 0.05, stockVol: 0.16, bondReturn: 0.015, bondVol: 0.05 }
+
+  it('uses the firm market assumptions for the blended portfolio', () => {
+    const { mean, vol } = portfolioMoments(cautious)
+    expect(mean).toBeCloseTo(0.6 * 0.05 + 0.4 * 0.015, 10)
+    expect(vol).toBeLessThan(portfolioMoments(DEFAULT_MARKET).vol)
+  })
+
+  it('projects a lower median and a narrower range than the default', () => {
+    const years = 30
+    const def = simulate(generateReturns(DEFAULT_MARKET, 4000, years, 1), 100_000, 20_000)
+    const firm = simulate(generateReturns(cautious, 4000, years, 1), 100_000, 20_000)
+    expect(firm[50][years]).toBeLessThan(def[50][years])
+    expect(firm[90][years] / firm[10][years]).toBeLessThan(def[90][years] / def[10][years])
+  })
+
+  it('needs a bigger portfolio with a lower withdrawal rate and higher tax', () => {
+    expect(fiTarget(60_000, 0.0325, 0.2)).toBeGreaterThan(fiTarget(60_000, 0.04, 0.1))
+    expect(fiTarget(60_000, 0.0325, 0.2)).toBeCloseTo(60_000 / 0.8 / 0.0325, 6)
+  })
+})
