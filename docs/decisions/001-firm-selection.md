@@ -1,6 +1,6 @@
 # 001: How a deployment picks its firm config
 
-**Status:** accepted (Nov 25, 2026, issue #2)
+**Status:** superseded by [002](002-single-user-product.md) (Nov 25, 2026). The per-firm config described here was built in #2 and removed in #20.
 
 ## Context
 

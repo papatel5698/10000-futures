@@ -1,71 +1,50 @@
-# Engagement brief
+# Product brief
 
-> **The client is made up.** It's a realistic composite used to frame this portfolio project as a client engagement. No real firm, advisor or client data is involved.
+## The user
 
-## The client
-
-**Sample Company Planning** (fictional) is a fee-only financial-planning firm with six advisors and about 400 client households. Most clients are mid-career professionals planning for retirement in the next 10–30 years.
-
-Today an advisor runs a retirement meeting from a shared Excel workbook. Before the meeting, a paraplanner copies the client's balances from the custodian portal and the CRM into the sheet. During the meeting, the advisor changes a cell ("what if you retire at 60?"), waits for the sheet to recalculate and talks the client through a single projected line.
+One person who wants a realistic look at their own financial future: when they could stop working, and how their choices (spending, saving, investment mix, retirement age) change that. They aren't finance experts. They have a rough idea of their balances and pay, and their account data lives in brokerage exports and budgeting tools, not in their head.
 
 ## The problem
 
-| Pain | What it costs the firm |
+| Pain | What it costs the user |
 | --- | --- |
-| **One line, not a range.** The workbook projects a single average return. Clients hear "you'll have $2.1M at 65" and take it as a promise. | Advisors spend meeting time walking back false precision, and compliance worries about it. |
-| **What-ifs are slow.** Each scenario means editing cells while the client watches, and the sheet sometimes breaks. | Meetings cover two or three scenarios instead of the ones the client actually asks about. |
-| **Assumptions drift.** Each advisor has their own copy with slightly different return, inflation and withdrawal assumptions. | Two advisors can give the same client different answers. |
-| **Retyped data.** Balances are copied by hand from the custodian and CRM before every meeting. | About 20–30 minutes of prep per meeting, plus typos. |
-| **Nothing to take home.** Clients leave with a screenshot or a PDF of the spreadsheet. | Follow-up questions come in by email and restart the cycle. |
-
-## Users
-
-- **Advisors** run the tool during meetings, usually on a laptop shared to a screen. They need speed, firm-approved assumptions they can't accidentally change, and a way to explain the model.
-- **Clients** watch, ask questions and sometimes drive. They aren't finance experts. They need plain language, a range of outcomes rather than one number, and something to take home.
-- **Operations / compliance** (one person at a firm this size) sets the firm's assumptions and branding, and needs to know where client data goes.
+| **One line, not a range.** Most retirement calculators project a single average return: "you'll have $2.1M at 65". | People read it as a promise and plan around a number that only happens in a typical market. |
+| **What-ifs are slow.** Spreadsheets and calculators make you re-enter everything to try "retire at 60" or "spend $500 less a month". | People try two or three scenarios instead of the ones they actually wonder about. |
+| **Retyped data.** Balances and contributions get copied by hand from brokerage sites and budgeting apps. | Setup takes long enough that many people never finish, and typos skew the result. |
+| **Nothing to keep or share.** Results disappear when the tab closes, or need an account to save. | Hard to revisit a plan or show it to a partner. |
+| **Privacy.** Many planners want an account and store your finances on their servers. | People who care about privacy don't use them. |
 
 ## What we're delivering
 
-A white-labeled planning tool, deployed per firm, in four milestones:
+A retirement planner that runs in the browser, in four milestones:
 
-1. **White-label per client (M1).** Firm name, logo, colors and planning assumptions come from one config file per firm. A methodology page advisors can show clients.
-2. **AI what-if assistant (M2).** Clients and advisors ask questions in plain English. The assistant answers by running the simulation, cites the run and inputs behind every number, and gives no investment advice.
-3. **Data in, report out (M3).** CSV import from custodian exports, an intake API the CRM can call to create a pre-filled plan link, and a shareable plan report.
-4. **Polish and handoff (M4).** Accessibility and mobile pass, a guide for deploying to a new firm, and a demo framed as an advisor meeting.
+1. **Single-user foundation (M1).** One set of sensible default assumptions, a fan chart of 10,000 simulated futures, and a methodology page that explains the model and what it leaves out.
+2. **AI what-if assistant (M2).** The user asks questions in plain English. The assistant answers by running the simulation, cites the run and inputs behind every number, and gives no investment advice.
+3. **Data in, report out (M3).** CSV import from brokerage exports, a documented plan-link API that the user's own tools (a budgeting app, a spreadsheet script) can call to get a pre-filled plan link, and a shareable plan export.
+4. **Polish and handoff (M4).** Accessibility and mobile pass, architecture and privacy docs, a self-host guide, and a short demo.
 
 ## Success metrics
 
-To be measured in a planned pilot with two advisors over a month of meetings. The "today" figures are fictional baselines for a firm this size, not measured data. Targets are what the firm would need to see to roll it out.
-
-| Metric | Today (fictional baseline) | Target |
-| --- | --- | --- |
-| Meeting prep time per client | 20–30 min | Under 5 min (imported or CRM-linked, not retyped) |
-| What-if scenarios covered per meeting | 2–3 | 5+ |
-| Time to answer a what-if in the meeting | 1–3 min of cell edits | Under 15 seconds |
-| Advisors using different assumptions | Every advisor's own copy | Zero: one firm config |
-| Assistant numbers that match a real simulation run | n/a | 100% on the eval suite |
-| Client personal financial data stored on a server | Spreadsheets on a shared drive | None |
-| Running cost | n/a | Within a $50/month cap, with a graceful pause if it's hit |
+| Metric | Target |
+| --- | --- |
+| Time from landing to a first result | Under 3 minutes typing, or under 1 minute with a CSV import |
+| Time to answer a what-if | Under 15 seconds, with the assistant or the sliders |
+| Assistant numbers that match a real simulation run | 100% on the eval suite |
+| Personal financial data stored on a server | None |
+| Running cost | Within a $50/month cap, with a graceful pause if it's hit |
 
 ## Constraints
 
-- **Privacy.** No personal financial data is stored on a server or written to logs. Plans live in the browser, in a shareable URL or in an exported file. The intake API processes what the CRM sends in memory only, never logs it, and returns a signed, short-lived link without storing anything.
+- **Privacy.** No personal financial data is stored on a server or written to logs. Plans live in the browser, in a shareable URL or in an exported file. The plan-link API processes what it's sent in memory only, never logs it, and returns a signed, short-lived link without storing anything.
 - **Not advice.** The tool is educational. It shows a disclaimer, explains its model, and the assistant never recommends specific investments or products.
 - **Cost.** A $50/month hard cap on AI spend, with per-visitor daily limits. When the cap is hit, the assistant says it's paused rather than erroring.
-- **Small-firm IT.** No servers to run. Static hosting plus one small serverless function, and onboarding a new firm means adding a config file and a deployment, not changing code.
+- **No accounts.** Nothing to sign up for. Static hosting plus one small serverless function for the assistant and the plan-link API.
 - **Trust.** Every number the assistant gives comes from the simulation engine, never from the model guessing.
 
 ## Out of scope
 
 - Tax planning, Social Security optimization, estate planning and insurance.
-- Account aggregation or live custodian connections (we import exports and accept CRM pushes instead).
-- Storing client records or acting as a CRM.
+- Live account aggregation (logging in to brokerages). We import exports instead.
+- User accounts or storing plans on a server.
 - Investment recommendations, product selection or rebalancing.
-- Advisor logins, user accounts and multi-tenant admin. Each firm gets its own deployment and config.
-- Regulatory filings or a compliance review of the firm's use of the tool. The firm owns that.
-
-## Open questions for the client
-
-- Which custodian's export format matters most for the CSV import? (We'll ship a generic format plus one brokerage format.)
-- Which CRM would call the intake API, and can it make an authenticated HTTP request from a workflow?
-- Does compliance need to approve the methodology page wording before advisors use it with clients?
+- White-labeling or multi-firm deployments. See [decision 002](decisions/002-single-user-product.md).
