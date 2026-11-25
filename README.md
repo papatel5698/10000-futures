@@ -2,7 +2,7 @@
 
 ## Client and problem
 
-A white-label retirement planner for small financial-planning firms. The client (fictional, for this portfolio project) is a six-advisor firm whose advisors walk clients through retirement scenarios in a shared spreadsheet: one projected line instead of a range, slow what-ifs, assumptions that differ between advisors and balances retyped before every meeting. This tool gives each firm its own branded deployment with firm-wide assumptions, a range of outcomes from 10,000 simulated markets, and (coming) an AI assistant that answers what-ifs by running the simulation.
+A white-label retirement planner for small financial-planning firms. The client (fictional, for this portfolio project) is a six-advisor firm whose advisors walk clients through retirement scenarios in a shared spreadsheet: one projected line instead of a range, slow what-ifs, assumptions that differ between advisors and balances retyped before every meeting. Today it shows a range of outcomes from 10,000 simulated markets. Coming next: a branded deployment per firm with firm-wide assumptions (M1), and an AI assistant that answers what-ifs by running the simulation.
 
 The full engagement brief, with users, success metrics, constraints and what's out of scope, is in [docs/brief.md](docs/brief.md).
 

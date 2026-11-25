@@ -35,9 +35,9 @@ A white-labeled planning tool, deployed per firm, in four milestones:
 
 ## Success metrics
 
-Measured in a pilot with two advisors over a month of meetings. Targets are what the firm would need to see to roll it out.
+To be measured in a planned pilot with two advisors over a month of meetings. The "today" figures are fictional baselines for a firm this size, not measured data. Targets are what the firm would need to see to roll it out.
 
-| Metric | Today (estimate) | Target |
+| Metric | Today (fictional baseline) | Target |
 | --- | --- | --- |
 | Meeting prep time per client | 20–30 min | Under 5 min (imported or CRM-linked, not retyped) |
 | What-if scenarios covered per meeting | 2–3 | 5+ |
@@ -49,10 +49,10 @@ Measured in a pilot with two advisors over a month of meetings. Targets are what
 
 ## Constraints
 
-- **Privacy.** No personal financial data is stored on a server or written to logs. Plans live in the browser, in a shareable URL or in an exported file. The intake API returns a signed, short-lived link and stores nothing.
+- **Privacy.** No personal financial data is stored on a server or written to logs. Plans live in the browser, in a shareable URL or in an exported file. The intake API processes what the CRM sends in memory only, never logs it, and returns a signed, short-lived link without storing anything.
 - **Not advice.** The tool is educational. It shows a disclaimer, explains its model, and the assistant never recommends specific investments or products.
 - **Cost.** A $50/month hard cap on AI spend, with per-visitor daily limits. When the cap is hit, the assistant says it's paused rather than erroring.
-- **Small-firm IT.** No servers to run. Static hosting plus one small serverless function, and onboarding a new firm means adding a config file, not changing code.
+- **Small-firm IT.** No servers to run. Static hosting plus one small serverless function, and onboarding a new firm means adding a config file and a deployment, not changing code.
 - **Trust.** Every number the assistant gives comes from the simulation engine, never from the model guessing.
 
 ## Out of scope
