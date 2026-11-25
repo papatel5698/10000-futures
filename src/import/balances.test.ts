@@ -64,6 +64,49 @@ describe('brokerage positions export', () => {
   })
 })
 
+describe('line numbers and amounts', () => {
+  it('counts physical lines after a cell that spans lines', () => {
+    const r = importBalances('account_type,balance,name\nira,1,"two\nline name"\nbogus,5,b\n')
+    expect(r.errors).toEqual([{ line: 4, message: 'Unknown account type "bogus". Use workplace, ira, brokerage or other.' }])
+  })
+
+  it('reports an unclosed quote instead of swallowing the rest of the file', () => {
+    const r = importBalances('account_type,balance\nira,"5\nother,6\n')
+    expect(r.format).toBeNull()
+    expect(r.errors).toEqual([{ line: 2, message: 'Unclosed quote starting on line 2.' }])
+  })
+
+  it.each(['1-2', '5-', '(-5)', '$-', '1.2.3', '--5', '$1,00'])('rejects the amount %j', (amount) => {
+    const r = importBalances(`Account Name,Current Value\nIndividual,100\nIndividual,"${amount}"\n`)
+    expect(r.errors).toEqual([{ line: 3, message: `Current Value "${amount}" is not a dollar amount.` }])
+    expect(r.balances).toEqual({ brokerage: 100 })
+  })
+
+  it.each([
+    ['-$100.00', -100],
+    ['$-100', -100],
+    ['($1,250.50)', -1250.5],
+    ['−40', -40],
+    ['$1,234,567.89', 1234567.89],
+    ['1234.5', 1234.5],
+    ['.5', 0.5],
+  ])('reads the amount %j', (amount, value) => {
+    const r = importBalances(`Account Name,Current Value\nIndividual,1000000\nIndividual,"${amount}"\n`)
+    expect(r.errors).toEqual([])
+    expect(r.accounts[0].value).toBeCloseTo(1_000_000 + value, 6)
+  })
+})
+
+describe('positions with account numbers', () => {
+  it('keeps two accounts with the same name apart', () => {
+    const r = importBalances('Account Number,Account Name,Current Value\n111,Individual,100\n222,Individual,50\n111,Individual,1\n')
+    expect(r.accounts).toEqual([
+      { name: 'Individual', type: 'brokerage', value: 101 },
+      { name: 'Individual', type: 'brokerage', value: 50 },
+    ])
+  })
+})
+
 describe('unrecognized files', () => {
   it.each([
     ['an empty file', ''],
@@ -91,6 +134,9 @@ describe('accountType', () => {
     ['403(b) Retirement', 'workplace'],
     ['Thrift Savings Plan', 'workplace'],
     ['ROTH IRA', 'ira'],
+    ['Individual Retirement Account', 'ira'],
+    ['Rollover IRA', 'ira'],
+    ['SEP account', 'ira'],
     ['Traditional IRA', 'ira'],
     ['SEP-IRA', 'ira'],
     ['Individual', 'brokerage'],

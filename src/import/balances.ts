@@ -7,7 +7,7 @@
  * - brokerage positions export: one row per holding, with `Account Name` and `Current Value`
  */
 import type { Plan } from '../state/plan'
-import { parseCsv } from './csv'
+import { CsvError, parseCsv, type CsvRow } from './csv'
 
 export type BalanceKey = keyof Plan['balances']
 
@@ -55,21 +55,29 @@ const TYPE_ALIASES: Record<string, BalanceKey> = {
 export function accountType(name: string): BalanceKey {
   const n = name.toLowerCase()
   if (/\b40[13]\s*\(?[kb]\)?|\b457\b|\btsp\b|thrift savings/.test(n)) return 'workplace'
-  if (/\bira\b|\broth\b/.test(n)) return 'ira'
+  if (/\bira\b|\broth\b|\bsep\b|individual retirement/.test(n)) return 'ira'
   if (/individual|joint|brokerage|taxable|\btrust\b/.test(n)) return 'brokerage'
   return 'other'
 }
 
-/** Parse "$1,234.56", "-$100.00" or "($100.00)". Returns null if it isn't an amount. */
+const AMOUNT = /^(-?)\$?(-?)((?:\d{1,3}(?:,\d{3})+|\d+)(?:\.\d+)?|\.\d+)$/
+
+/**
+ * Parse "$1,234.56", "-$100.00", "$-100", "($100.00)" or "−100" (Unicode minus).
+ * The sign may only lead (or wrap in parentheses), so "1-2" is rejected rather than read as -12.
+ */
 function parseAmount(raw: string): number | null {
-  const s = raw.trim()
-  const negative = s.includes('-') || (s.startsWith('(') && s.endsWith(')'))
-  const digits = s.replace(/[$,()\s-]/g, '')
-  if (!/^(\d+(\.\d+)?|\.\d+)$/.test(digits)) return null
-  return (negative ? -1 : 1) * parseFloat(digits)
+  let s = raw.trim().replace(/−/g, '-')
+  const paren = /^\((.*)\)$/.exec(s)
+  if (paren) s = paren[1]
+  const m = AMOUNT.exec(s)
+  if (!m) return null
+  const signs = (m[1] ? 1 : 0) + (m[2] ? 1 : 0) + (paren ? 1 : 0)
+  if (signs > 1) return null
+  return (signs ? -1 : 1) * parseFloat(m[3].replace(/,/g, ''))
 }
 
-const isBlank = (row: string[]) => row.every((c) => c.trim() === '')
+const isBlank = (row: CsvRow) => row.cells.every((c) => c.trim() === '')
 
 function totals(accounts: ImportedAccount[]): ImportResult['balances'] {
   const out: ImportResult['balances'] = {}
@@ -78,47 +86,54 @@ function totals(accounts: ImportedAccount[]): ImportResult['balances'] {
   return out
 }
 
-function importGeneric(rows: string[][], header: string[], headerLine: number): ImportResult {
+function importGeneric(rows: CsvRow[], header: string[], headerLine: number): ImportResult {
   const typeCol = header.indexOf('account_type')
   const balCol = header.indexOf('balance')
   const nameCol = header.indexOf('name')
   const accounts: ImportedAccount[] = []
   const errors: ImportIssue[] = []
-  rows.slice(headerLine).forEach((row, i) => {
-    const line = headerLine + i + 1
-    if (isBlank(row)) return
+  for (const { cells: row, line } of rows) {
+    if (row.every((c) => c.trim() === '')) continue
     const rawType = (row[typeCol] ?? '').trim()
     const type = TYPE_ALIASES[rawType.toLowerCase()]
-    if (!type) return void errors.push({ line, message: `Unknown account type "${rawType}". Use workplace, ira, brokerage or other.` })
+    if (!type) {
+      errors.push({ line, message: `Unknown account type "${rawType}". Use workplace, ira, brokerage or other.` })
+      continue
+    }
     const rawBal = (row[balCol] ?? '').trim()
-    if (!rawBal) return void errors.push({ line, message: 'Missing a balance.' })
     const value = parseAmount(rawBal)
-    if (value == null) return void errors.push({ line, message: `Balance "${rawBal}" is not a dollar amount.` })
-    if (value < 0) return void errors.push({ line, message: `Balance "${rawBal}" is negative.` })
-    accounts.push({ name: (row[nameCol] ?? '').trim() || rawType, type, value })
-  })
+    if (!rawBal) errors.push({ line, message: 'Missing a balance.' })
+    else if (value == null) errors.push({ line, message: `Balance "${rawBal}" is not a dollar amount.` })
+    else if (value < 0) errors.push({ line, message: `Balance "${rawBal}" is negative.` })
+    else accounts.push({ name: (row[nameCol] ?? '').trim() || rawType, type, value })
+  }
   return finish('generic', accounts, errors, headerLine)
 }
 
-function importPositions(rows: string[][], header: string[], headerLine: number): ImportResult {
+function importPositions(rows: CsvRow[], header: string[], headerLine: number): ImportResult {
   const nameCol = header.indexOf('account name')
+  const numberCol = header.indexOf('account number')
   const valueCol = header.indexOf('current value')
-  const byName = new Map<string, { value: number; line: number }>()
+  // Keyed by account number when the export has one, so two accounts with the same name stay apart.
+  const byAccount = new Map<string, { name: string; value: number; line: number }>()
   const errors: ImportIssue[] = []
-  rows.slice(headerLine).forEach((row, i) => {
-    const line = headerLine + i + 1
+  for (const { cells: row, line } of rows) {
     // Blank lines and the one-cell disclaimer/footer lines brokerages append.
-    if (isBlank(row) || row.length === 1) return
+    if (row.length === 1 || row.every((c) => c.trim() === '')) continue
     const name = (row[nameCol] ?? '').trim()
     const rawValue = (row[valueCol] ?? '').trim()
-    if (!name || rawValue === '' || rawValue === '--') return
+    if (!name || rawValue === '' || rawValue === '--') continue
     const value = parseAmount(rawValue)
-    if (value == null) return void errors.push({ line, message: `Current Value "${rawValue}" is not a dollar amount.` })
-    const prev = byName.get(name)
-    byName.set(name, { value: (prev?.value ?? 0) + value, line: prev?.line ?? line })
-  })
+    if (value == null) {
+      errors.push({ line, message: `Current Value "${rawValue}" is not a dollar amount.` })
+      continue
+    }
+    const key = (numberCol >= 0 && row[numberCol]?.trim()) || name
+    const prev = byAccount.get(key)
+    byAccount.set(key, { name, value: (prev?.value ?? 0) + value, line: prev?.line ?? line })
+  }
   const accounts: ImportedAccount[] = []
-  for (const [name, { value, line }] of byName) {
+  for (const { name, value, line } of byAccount.values()) {
     if (value < 0) errors.push({ line, message: `Account "${name}" adds up to a negative value.` })
     else accounts.push({ name, type: accountType(name), value })
   }
@@ -134,12 +149,19 @@ function finish(format: 'generic' | 'positions', accounts: ImportedAccount[], er
 export function importBalances(text: string): ImportResult {
   const fail = (line: number, message: string): ImportResult => ({ format: null, balances: {}, accounts: [], errors: [{ line, message }] })
   if (text.length > MAX_IMPORT_CHARS) return fail(0, 'File is too large to be a balances export (over 1 MB).')
-  const rows = parseCsv(text)
+  let rows: CsvRow[]
+  try {
+    rows = parseCsv(text)
+  } catch (e) {
+    if (e instanceof CsvError) return fail(e.line, e.message)
+    throw e
+  }
   const first = rows.findIndex((r) => !isBlank(r))
   if (first === -1) return fail(1, UNRECOGNIZED)
-  const header = rows[first].map((h) => h.trim().toLowerCase())
-  const headerLine = first + 1
-  if (header.includes('account_type') && header.includes('balance')) return importGeneric(rows, header, headerLine)
-  if (header.includes('account name') && header.includes('current value')) return importPositions(rows, header, headerLine)
+  const header = rows[first].cells.map((h) => h.trim().toLowerCase())
+  const headerLine = rows[first].line
+  const body = rows.slice(first + 1)
+  if (header.includes('account_type') && header.includes('balance')) return importGeneric(body, header, headerLine)
+  if (header.includes('account name') && header.includes('current value')) return importPositions(body, header, headerLine)
   return fail(headerLine, UNRECOGNIZED)
 }

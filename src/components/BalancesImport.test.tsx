@@ -1,5 +1,5 @@
 // @vitest-environment jsdom
-import { cleanup, fireEvent, render, screen } from '@testing-library/react'
+import { cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import { BalancesImport } from './BalancesImport'
 
@@ -41,6 +41,30 @@ describe('BalancesImport', () => {
     choose('account_type,balance\nira,500\nsavings,10\n')
     expect(await screen.findByText('Line 3: Unknown account type "savings". Use workplace, ira, brokerage or other.')).toBeTruthy()
     expect(onImport).toHaveBeenCalledWith({ ira: 500 })
+  })
+
+  it('imports the same file again after it is picked a second time', async () => {
+    const onImport = vi.fn()
+    render(<BalancesImport onImport={onImport} />)
+    const input = screen.getByLabelText(/import balances from a csv/i) as HTMLInputElement
+    choose('account_type,balance\nira,500\n')
+    await waitFor(() => expect(onImport).toHaveBeenCalledTimes(1))
+    expect(input.value).toBe('')
+    choose('account_type,balance\nira,500\n')
+    await waitFor(() => expect(onImport).toHaveBeenCalledTimes(2))
+  })
+
+  it('shows an error when the file cannot be read', async () => {
+    render(<BalancesImport onImport={vi.fn()} />)
+    const file = new File(['x'], 'broken.csv')
+    file.text = () => Promise.reject(new Error('denied'))
+    fireEvent.change(screen.getByLabelText(/import balances from a csv/i), { target: { files: [file] } })
+    expect(await screen.findByText(/Couldn't read broken\.csv/)).toBeTruthy()
+  })
+
+  it('keeps the status region in the page before any import, so screen readers announce results', () => {
+    render(<BalancesImport onImport={vi.fn()} />)
+    expect(screen.getByRole('status').textContent).toBe('')
   })
 
   it('imports nothing from an unrecognized file', async () => {

@@ -28,16 +28,16 @@ The app's **methodology page** ([`#/methodology`](https://papatel5698.github.io/
 
 ## Importing balances
 
-On the "What do you have invested today?" step, **Import balances from a CSV** fills in the balance fields. The file is read in the browser and never uploaded. Account types found in the file replace those fields; fields for types not in the file keep what you typed. The app lists each imported account, which field it went to, and any rows it couldn't read (with line numbers).
+On the "What do you have invested today?" step, **Import balances from a CSV** fills in the balance fields. The file is read in the browser and never uploaded. Account types found in the file replace those fields, even with $0; fields for types not in the file keep what you typed. Choosing the same file again re-imports it. The app lists each imported account, which field it went to, and any rows it couldn't read (with line numbers).
 
 Two formats are recognized from the header row:
 
 | Format | Header must include | Rows |
 | --- | --- | --- |
 | Template ([download](public/samples/balances-template.csv)) | `account_type`, `balance` (optional `name`) | One per account. `account_type` is `workplace`, `ira`, `brokerage` or `other`; aliases like `401k`, `403b`, `roth`, `taxable` and `hsa` work. |
-| Brokerage positions export | `Account Name`, `Current Value` | One per holding. Holdings are added up per account, and the account name decides the type: 401(k)/403(b)/457/TSP → workplace, IRA/Roth → IRA, Individual/Joint/Brokerage/Taxable/Trust → brokerage, anything else → other. Blank values and `--` are skipped, and one-cell disclaimer lines at the bottom are ignored. |
+| Brokerage positions export | `Account Name`, `Current Value` | One per holding. Holdings are added up per account (by `Account Number` when present, so two accounts with the same name stay separate), and the account name decides the type: 401(k)/403(b)/457/TSP → workplace, IRA/Roth/SEP/Individual Retirement → IRA, Individual/Joint/Brokerage/Taxable/Trust → brokerage, anything else → other. Blank values and `--` are skipped, and one-cell disclaimer lines at the bottom are ignored. |
 
-Amounts may include `$`, commas, a minus sign or parentheses. Files over 1 MB are refused. The positions format follows the common layout of brokerage "positions" downloads; the fixture in `src/import/fixtures/` is synthetic, so a real export with different column names needs a new mapping ([decision 003](docs/decisions/003-csv-import-formats.md)).
+Amounts may include `$` and thousands commas; a negative amount has a leading minus (`-$100`, `$-100`) or parentheses (`($100)`), so something like `1-2` is reported as a bad row instead of being misread. A quote that is never closed is reported with the line it opened on. Files over 1 MB are refused. The positions format follows the common layout of brokerage "positions" downloads; the fixture in `src/import/fixtures/` is synthetic, so a real export with different column names needs a new mapping ([decision 003](docs/decisions/003-csv-import-formats.md)).
 
 ## Project layout
 
