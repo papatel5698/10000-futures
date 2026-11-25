@@ -1,0 +1,15 @@
+{
+  "name": "Example Wealth Partners",
+  "logo": "example-wealth.svg",
+  "colors": { "accent": "#8a2c3b", "accentDark": "#e59aa6" },
+  "assumptions": {
+    "stockShare": 0.6,
+    "stockReturn": 0.05,
+    "stockVol": 0.16,
+    "bondReturn": 0.015,
+    "bondVol": 0.05,
+    "correlation": 0.1,
+    "withdrawalRate": 0.0325,
+    "taxRate": 0.2
+  }
+}

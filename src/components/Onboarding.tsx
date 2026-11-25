@@ -1,11 +1,13 @@
 import { useState, type ReactNode } from 'react'
-import { type Plan, EXAMPLE_PLAN, totalBalance } from '../state/plan'
+import { type Plan, totalBalance } from '../state/plan'
 import { MoneyInput, NumberInput } from './MoneyInput'
 import { compact, money } from '../format'
 
 interface Props {
   plan: Plan
   setPlan: (p: Plan) => void
+  /** Made-up plan for the "try it" button, using the firm's assumptions. */
+  example: Plan
   onFinish: () => void
   startAt?: number
 }
@@ -25,7 +27,7 @@ const MIXES = [
   { label: '60 / 40', share: 0.6, note: 'Classic balanced portfolio' },
 ]
 
-export function Onboarding({ plan, setPlan, onFinish, startAt = 0 }: Props) {
+export function Onboarding({ plan, setPlan, example, onFinish, startAt = 0 }: Props) {
   const [step, setStep] = useState(startAt)
   const [touched, setTouched] = useState(false)
   const set = (patch: Partial<Plan>) => setPlan({ ...plan, ...patch })
@@ -65,7 +67,7 @@ export function Onboarding({ plan, setPlan, onFinish, startAt = 0 }: Props) {
           <button
             className="btn ghost"
             onClick={() => {
-              setPlan(EXAMPLE_PLAN)
+              setPlan(example)
               onFinish()
             }}
           >
