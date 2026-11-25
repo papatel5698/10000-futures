@@ -34,6 +34,13 @@ describe('EMPTY_PLAN and EXAMPLE_PLAN', () => {
   })
 })
 
+describe('totalBalance', () => {
+  it('counts blank balances as zero', () => {
+    expect(totalBalance(EMPTY_PLAN)).toBe(0)
+    expect(totalBalance({ ...EMPTY_PLAN, balances: { ...EMPTY_PLAN.balances, ira: 5_000 } })).toBe(5_000)
+  })
+})
+
 describe('isComplete', () => {
   it('needs a retirement age after the current age', () => {
     expect(isComplete({ ...EXAMPLE_PLAN, retireAge: EXAMPLE_PLAN.age })).toBe(false)
