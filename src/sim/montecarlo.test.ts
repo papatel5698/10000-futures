@@ -98,3 +98,19 @@ describe('non-default assumptions', () => {
     expect(fiTarget(60_000, 0.0325, 0.2)).toBeCloseTo(60_000 / 0.8 / 0.0325, 6)
   })
 })
+
+describe('generateReturns across horizons', () => {
+  it('gives each run the same early years whatever the horizon, so a longer chart keeps the same futures', () => {
+    const short = generateReturns(DEFAULT_MARKET, 50, 30)
+    const long = generateReturns(DEFAULT_MARKET, 50, 45)
+    for (let run = 0; run < 50; run++) {
+      for (let t = 0; t < 30; t++) expect(long.data[run * 45 + t]).toBe(short.data[run * 30 + t])
+    }
+  })
+
+  it('still works past 60 years', () => {
+    const r = generateReturns(DEFAULT_MARKET, 3, 70)
+    expect(r.data).toHaveLength(210)
+    expect(new Set(r.data).size).toBe(210)
+  })
+})

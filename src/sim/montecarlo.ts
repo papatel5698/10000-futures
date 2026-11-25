@@ -89,6 +89,14 @@ export interface ReturnMatrix {
   data: Float64Array
 }
 
+/** Each run's draws are laid out on a fixed stride of at least this many years. */
+export const DRAW_STRIDE_YEARS = 60
+
+/**
+ * Yearly returns for `runs` futures of `years` years.
+ * Draws sit on a fixed per-run stride, so year t of run i is the same whatever the horizon:
+ * lengthening the chart extends each future instead of swapping in new ones.
+ */
 export function generateReturns(
   market: MarketAssumptions,
   runs: number,
@@ -97,9 +105,12 @@ export function generateReturns(
 ): ReturnMatrix {
   const { mean, vol } = portfolioMoments(market)
   const { mu, sigma } = lognormalParams(mean, vol)
-  const z = normals(runs * years, seed)
+  const stride = Math.max(years, DRAW_STRIDE_YEARS)
+  const z = normals(runs * stride, seed)
   const data = new Float64Array(runs * years)
-  for (let i = 0; i < data.length; i++) data[i] = Math.exp(mu + sigma * z[i]) - 1
+  for (let i = 0; i < runs; i++) {
+    for (let t = 0; t < years; t++) data[i * years + t] = Math.exp(mu + sigma * z[i * stride + t]) - 1
+  }
   return { runs, years, data }
 }
 
