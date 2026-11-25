@@ -1,5 +1,13 @@
 # 10,000 Futures
 
+## Client and problem
+
+A white-label retirement planner for small financial-planning firms. The client (fictional, for this portfolio project) is a six-advisor firm whose advisors walk clients through retirement scenarios in a shared spreadsheet: one projected line instead of a range, slow what-ifs, assumptions that differ between advisors and balances retyped before every meeting. This tool gives each firm its own branded deployment with firm-wide assumptions, a range of outcomes from 10,000 simulated markets, and (coming) an AI assistant that answers what-ifs by running the simulation.
+
+The full engagement brief, with users, success metrics, constraints and what's out of scope, is in [docs/brief.md](docs/brief.md).
+
+## What it does
+
 A Monte Carlo retirement planner. It asks seven questions (age, target retirement age, savings, workplace contributions, take-home pay, spending and investment mix), then plays out 10,000 market histories and shows when you could reach financial independence in an average, below-average and very-below-average market.
 
 Everything runs in the browser. Answers are saved only in the visitor's `localStorage`; nothing is sent to a server.
@@ -23,6 +31,7 @@ src/sim/montecarlo.ts       pure simulation engine (no React)
 src/sim/montecarlo.test.ts  Vitest unit tests
 src/state/plan.ts           plan model + localStorage persistence
 src/components/             onboarding flow, results dashboard, fan chart
+docs/brief.md               engagement brief: client, problem, success metrics
 ```
 
 ## Develop
