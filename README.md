@@ -31,8 +31,18 @@ src/components/             onboarding flow, results dashboard, fan chart
 npm install
 npm run dev     # local dev server
 npm test        # unit tests
+npm run coverage  # unit tests with coverage (report in coverage/)
+npm run lint
 npm run build   # production build in dist/
 ```
+
+## CI and test-driven development
+
+Every pull request and push to `main` runs `.github/workflows/ci.yml`: lint, tests with coverage, and a production build. Coverage floors live in `vite.config.ts`: the simulation engine (`src/sim/`) must stay at 95%+ and the whole app may not drop below today's level. Floors only go up.
+
+Work is test-first: write a failing test, then the code that makes it pass. `.github/workflows/tests-required.yml` enforces the visible part: a PR that changes TypeScript under `src/` must also change a `*.test.ts(x)` file. For a change that truly needs no test, add the `no-tests-needed` label and explain why in the PR.
+
+`main` is protected: changes land only through a pull request with green CI. Every PR also gets a Claude Code review (`.github/workflows/claude-code-review.yml`).
 
 ## Deploy
 
