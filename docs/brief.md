@@ -4,7 +4,7 @@
 
 ## The client
 
-**Northbeam Planning** (fictional) is a fee-only financial-planning firm with six advisors and about 400 client households. Most clients are mid-career professionals planning for retirement in the next 10–30 years.
+**Sample Company Planning** (fictional) is a fee-only financial-planning firm with six advisors and about 400 client households. Most clients are mid-career professionals planning for retirement in the next 10–30 years.
 
 Today an advisor runs a retirement meeting from a shared Excel workbook. Before the meeting, a paraplanner copies the client's balances from the custodian portal and the CRM into the sheet. During the meeting, the advisor changes a cell ("what if you retire at 60?"), waits for the sheet to recalculate and talks the client through a single projected line.
 
