@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import { DEFAULT_MARKET } from '../sim/montecarlo'
-import { firmsToBundle, parseFirmConfig, readableInk, selectFirm, themeCss, type FirmConfig } from './firm'
+import { ASSUMPTION_RANGES, DEFAULT_ASSUMPTIONS, firmsToBundle, parseFirmConfig, readableInk, selectFirm, themeCss, type FirmConfig } from './firm'
 
 const minimal = { name: 'Test Firm', colors: { accent: '#112233' } }
 
@@ -42,15 +42,37 @@ describe('parseFirmConfig', () => {
     ['a non-string logo', { ...minimal, logo: 5 }, /logo/],
     ['an unknown assumption', { ...minimal, assumptions: { stockReturns: 0.06 } }, /unknown assumption "stockReturns"/],
     ['a non-number assumption', { ...minimal, assumptions: { stockReturn: '6%' } }, /stockReturn/],
+    ['an inherited key like toString', { ...minimal, assumptions: { toString: 0.05 } }, /unknown assumption "toString"/],
+    ['a stock return above the slider range', { ...minimal, assumptions: { stockReturn: 0.12 } }, /stockReturn/],
+    ['a bond return above the slider range', { ...minimal, assumptions: { bondReturn: 0.05 } }, /bondReturn/],
+    ['a stock share below the slider range', { ...minimal, assumptions: { stockShare: 0.2 } }, /stockShare/],
+    ['a withdrawal rate above the slider range', { ...minimal, assumptions: { withdrawalRate: 0.06 } }, /withdrawalRate/],
+    ['a logo that is not a data URI', { ...minimal, logo: 'https://example.com/logo.svg' }, /logo/],
     ['a percent written as a whole number', { ...minimal, assumptions: { stockReturn: 6.5 } }, /stockReturn/],
     ['a stock share above 1', { ...minimal, assumptions: { stockShare: 1.2 } }, /stockShare/],
     ['a negative volatility', { ...minimal, assumptions: { stockVol: -0.1 } }, /stockVol/],
     ['a correlation outside -1..1', { ...minimal, assumptions: { correlation: 1.5 } }, /correlation/],
     ['a zero withdrawal rate', { ...minimal, assumptions: { withdrawalRate: 0 } }, /withdrawalRate/],
-    ['a 100% tax rate', { ...minimal, assumptions: { taxRate: 1 } }, /taxRate/],
+    ['a tax rate above the slider range', { ...minimal, assumptions: { taxRate: 0.5 } }, /taxRate/],
     ['assumptions that are not an object', { ...minimal, assumptions: [] }, /assumptions/],
   ])('rejects %s', (_label, raw, message) => {
     expect(() => parseFirmConfig(raw, 'bad')).toThrow(message)
+  })
+
+  it('accepts the edges of every slider range', () => {
+    for (const [key, r] of Object.entries(ASSUMPTION_RANGES)) {
+      expect(() => parseFirmConfig({ ...minimal, assumptions: { [key]: r.min } }, 'edge')).not.toThrow()
+      expect(() => parseFirmConfig({ ...minimal, assumptions: { [key]: r.max } }, 'edge')).not.toThrow()
+    }
+  })
+
+  it('has default assumptions inside the slider ranges', () => {
+    const d = { ...DEFAULT_ASSUMPTIONS.market, withdrawalRate: DEFAULT_ASSUMPTIONS.withdrawalRate, taxRate: DEFAULT_ASSUMPTIONS.taxRate }
+    for (const [key, r] of Object.entries(ASSUMPTION_RANGES)) {
+      const v = d[key as keyof typeof d]
+      expect(v).toBeGreaterThanOrEqual(r.min)
+      expect(v).toBeLessThanOrEqual(r.max)
+    }
   })
 
   it('names the firm in the error', () => {

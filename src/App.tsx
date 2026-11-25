@@ -14,8 +14,8 @@ export default function App({ firm }: { firm: FirmConfig }) {
   )
 
   useEffect(() => {
-    if (plan !== blank) savePlan(firm.id, plan)
-  }, [plan, blank, firm.id])
+    if (plan !== blank) savePlan(firm.id, plan, firm.assumptions)
+  }, [plan, blank, firm.id, firm.assumptions])
 
   useEffect(() => {
     window.scrollTo({ top: 0 })

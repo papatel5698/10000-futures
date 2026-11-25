@@ -7,6 +7,7 @@ import {
   simulate,
   type MarketAssumptions,
 } from '../sim/montecarlo'
+import { ASSUMPTION_RANGES as R } from '../config/firm'
 import { type Plan, totalBalance } from '../state/plan'
 import { compact, money, pct } from '../format'
 import { FanChart } from './FanChart'
@@ -153,8 +154,8 @@ export function Results({ plan, setPlan, onEdit, onReset }: Props) {
           <h2>Try changes</h2>
           <Slider id="spend" label="Monthly spending" value={spend} min={1000} max={Math.max(15000, spend)} step={100} show={money} onChange={(v) => set({ monthlySpending: v })} />
           <Slider id="retire" label="Retirement age" value={retireAge} min={age + 1} max={80} step={1} show={String} onChange={(v) => set({ retireAge: v })} />
-          <Slider id="swr" label="Withdrawal rate" value={plan.withdrawalRate} min={0.025} max={0.05} step={0.0025} show={(v) => pct(v, 2)} onChange={(v) => set({ withdrawalRate: v })} />
-          <Slider id="tax" label="Tax on withdrawals" value={plan.taxRate} min={0} max={0.3} step={0.01} show={(v) => pct(v, 0)} onChange={(v) => set({ taxRate: v })} />
+          <Slider id="swr" label="Withdrawal rate" value={plan.withdrawalRate} min={R.withdrawalRate.min} max={R.withdrawalRate.max} step={0.0025} show={(v) => pct(v, 2)} onChange={(v) => set({ withdrawalRate: v })} />
+          <Slider id="tax" label="Tax on withdrawals" value={plan.taxRate} min={R.taxRate.min} max={R.taxRate.max} step={0.01} show={(v) => pct(v, 0)} onChange={(v) => set({ taxRate: v })} />
           <p className="callout">
             Investing <strong>{money(base.contribution)}</strong>/yr: {money(workplace)} workplace plan
             {base.contribution > workplace ? ` + ${money(base.contribution - workplace)} left over from take-home pay` : ''}.
@@ -162,11 +163,11 @@ export function Results({ plan, setPlan, onEdit, onReset }: Props) {
           <details>
             <summary>Market assumptions</summary>
             <div className="stack">
-              <Slider id="stk" label="Stocks share" value={plan.market.stockShare} min={0.3} max={1} step={0.05} show={(v) => pct(v, 0)} onChange={(v) => setMarket({ stockShare: v })} />
-              <Slider id="sr" label="Stock return after inflation" value={plan.market.stockReturn} min={0.03} max={0.09} step={0.0025} show={(v) => pct(v, 2)} onChange={(v) => setMarket({ stockReturn: v })} />
-              <Slider id="sv" label="Stock volatility" value={plan.market.stockVol} min={0.1} max={0.25} step={0.005} show={(v) => pct(v)} onChange={(v) => setMarket({ stockVol: v })} />
-              <Slider id="br" label="Bond return after inflation" value={plan.market.bondReturn} min={0} max={0.04} step={0.0025} show={(v) => pct(v, 2)} onChange={(v) => setMarket({ bondReturn: v })} />
-              <Slider id="bv" label="Bond volatility" value={plan.market.bondVol} min={0.03} max={0.1} step={0.005} show={(v) => pct(v)} onChange={(v) => setMarket({ bondVol: v })} />
+              <Slider id="stk" label="Stocks share" value={plan.market.stockShare} min={R.stockShare.min} max={R.stockShare.max} step={0.05} show={(v) => pct(v, 0)} onChange={(v) => setMarket({ stockShare: v })} />
+              <Slider id="sr" label="Stock return after inflation" value={plan.market.stockReturn} min={R.stockReturn.min} max={R.stockReturn.max} step={0.0025} show={(v) => pct(v, 2)} onChange={(v) => setMarket({ stockReturn: v })} />
+              <Slider id="sv" label="Stock volatility" value={plan.market.stockVol} min={R.stockVol.min} max={R.stockVol.max} step={0.005} show={(v) => pct(v)} onChange={(v) => setMarket({ stockVol: v })} />
+              <Slider id="br" label="Bond return after inflation" value={plan.market.bondReturn} min={R.bondReturn.min} max={R.bondReturn.max} step={0.0025} show={(v) => pct(v, 2)} onChange={(v) => setMarket({ bondReturn: v })} />
+              <Slider id="bv" label="Bond volatility" value={plan.market.bondVol} min={R.bondVol.min} max={R.bondVol.max} step={0.005} show={(v) => pct(v)} onChange={(v) => setMarket({ bondVol: v })} />
             </div>
           </details>
         </aside>

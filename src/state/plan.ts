@@ -63,26 +63,40 @@ const KEY = 'ten-thousand-futures:plan:v1'
 /** Each firm saves its own plan. The default firm keeps the original key so existing plans survive. */
 export const storageKey = (firmId: string) => (firmId === 'default' ? KEY : `${KEY}:${firmId}`)
 
+function sameAssumptions(a: FirmAssumptions | undefined, b: FirmAssumptions): boolean {
+  if (!a || a.withdrawalRate !== b.withdrawalRate || a.taxRate !== b.taxRate) return false
+  const keys = Object.keys(b.market) as (keyof MarketAssumptions)[]
+  return keys.every((k) => a.market?.[k] === b.market[k])
+}
+
+/**
+ * Load the firm's saved plan. If the firm has changed its config since the plan was saved
+ * (or the plan predates firm configs), the firm's new assumptions replace the saved ones;
+ * the client's own answers are kept.
+ */
 export function loadPlan(firmId: string, defaults: FirmAssumptions): Plan | null {
   try {
     const raw = localStorage.getItem(storageKey(firmId))
     if (!raw) return null
-    const parsed = JSON.parse(raw) as Partial<Plan>
+    const { basedOn, ...parsed } = JSON.parse(raw) as Partial<Plan> & { basedOn?: FirmAssumptions }
     const empty = emptyPlan(defaults)
-    return {
+    const plan: Plan = {
       ...empty,
       ...parsed,
       balances: { ...empty.balances, ...parsed.balances },
       market: { ...empty.market, ...parsed.market },
     }
+    if (sameAssumptions(basedOn, defaults)) return plan
+    return { ...plan, market: empty.market, withdrawalRate: empty.withdrawalRate, taxRate: empty.taxRate }
   } catch {
     return null
   }
 }
 
-export function savePlan(firmId: string, p: Plan): void {
+/** Save the plan along with the firm assumptions it started from, so config changes can be detected. */
+export function savePlan(firmId: string, p: Plan, basedOn: FirmAssumptions): void {
   try {
-    localStorage.setItem(storageKey(firmId), JSON.stringify(p))
+    localStorage.setItem(storageKey(firmId), JSON.stringify({ ...p, basedOn }))
   } catch {
     /* storage unavailable: the app still works for this visit */
   }

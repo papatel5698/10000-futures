@@ -23,7 +23,7 @@ export interface FirmAssumptions {
 export interface FirmConfig {
   id: string
   name: string
-  /** Logo as a URL or data URI, or null to show the default mark. */
+  /** Logo as a data URI (the build inlines clients/<logo file>), or null to show the default mark. */
   logo: string | null
   colors: FirmColors
   assumptions: FirmAssumptions
@@ -37,30 +37,27 @@ export const DEFAULT_ASSUMPTIONS: FirmAssumptions = {
   taxRate: 0.1,
 }
 
-type Range = { min: number; max: number; minExclusive?: boolean; maxExclusive?: boolean }
+export type AssumptionKey = keyof MarketAssumptions | 'withdrawalRate' | 'taxRate'
 
-/** Allowed range per assumption. Rates are fractions: 6.5% is 0.065. */
-const RANGES: Record<keyof MarketAssumptions | 'withdrawalRate' | 'taxRate', Range> = {
-  stockShare: { min: 0, max: 1 },
-  stockReturn: { min: -0.1, max: 0.2 },
-  stockVol: { min: 0, max: 1 },
-  bondReturn: { min: -0.1, max: 0.2 },
-  bondVol: { min: 0, max: 1 },
+/**
+ * Allowed range per assumption, inclusive. Rates are fractions: 6.5% is 0.065.
+ * The results sliders use these same bounds, so a firm's starting value always fits its slider.
+ */
+export const ASSUMPTION_RANGES: Record<AssumptionKey, { min: number; max: number }> = {
+  stockShare: { min: 0.3, max: 1 },
+  stockReturn: { min: 0.03, max: 0.09 },
+  stockVol: { min: 0.1, max: 0.25 },
+  bondReturn: { min: 0, max: 0.04 },
+  bondVol: { min: 0.03, max: 0.1 },
   correlation: { min: -1, max: 1 },
-  withdrawalRate: { min: 0, max: 0.2, minExclusive: true },
-  taxRate: { min: 0, max: 1, maxExclusive: true },
+  withdrawalRate: { min: 0.025, max: 0.05 },
+  taxRate: { min: 0, max: 0.3 },
 }
 
 const HEX = /^#([0-9a-f]{3}|[0-9a-f]{6})$/i
 const SLUG = /^[a-z0-9]+(-[a-z0-9]+)*$/
 
 const isObject = (x: unknown): x is Record<string, unknown> => typeof x === 'object' && x !== null && !Array.isArray(x)
-
-function inRange(v: number, r: Range): boolean {
-  if (r.minExclusive ? v <= r.min : v < r.min) return false
-  if (r.maxExclusive ? v >= r.max : v > r.max) return false
-  return true
-}
 
 /** Validate a raw config object and fill in defaults. Throws with a message naming the file and field. */
 export function parseFirmConfig(raw: unknown, id: string): FirmConfig {
@@ -73,7 +70,8 @@ export function parseFirmConfig(raw: unknown, id: string): FirmConfig {
   if (typeof raw.name !== 'string' || !raw.name.trim()) fail('"name" must be a non-empty string')
   const name = (raw.name as string).trim()
 
-  if (raw.logo !== undefined && raw.logo !== null && typeof raw.logo !== 'string') fail('"logo" must be a string')
+  if (raw.logo !== undefined && raw.logo !== null && (typeof raw.logo !== 'string' || !raw.logo.startsWith('data:image/')))
+    fail('"logo" must be an image data URI (the build inlines the logo file)')
   const logo = (raw.logo as string | null | undefined) ?? null
 
   const colors = isObject(raw.colors) ? raw.colors : {}
@@ -85,9 +83,9 @@ export function parseFirmConfig(raw: unknown, id: string): FirmConfig {
   if (raw.assumptions !== undefined && !isObject(raw.assumptions)) fail('"assumptions" must be an object')
   const given = (raw.assumptions ?? {}) as Record<string, unknown>
   for (const [key, value] of Object.entries(given)) {
-    const range = RANGES[key as keyof typeof RANGES]
-    if (!range) fail(`unknown assumption "${key}"`)
-    if (typeof value !== 'number' || !Number.isFinite(value) || !inRange(value, range))
+    if (!Object.prototype.hasOwnProperty.call(ASSUMPTION_RANGES, key)) fail(`unknown assumption "${key}"`)
+    const range = ASSUMPTION_RANGES[key as AssumptionKey]
+    if (typeof value !== 'number' || !Number.isFinite(value) || value < range.min || value > range.max)
       fail(`assumption "${key}" must be a number from ${range.min} to ${range.max} (rates are fractions: 6.5% is 0.065)`)
   }
   const { withdrawalRate, taxRate, ...market } = given as Partial<MarketAssumptions & { withdrawalRate: number; taxRate: number }>

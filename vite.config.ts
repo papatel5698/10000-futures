@@ -23,7 +23,7 @@ export default defineConfig({
         'src/state/**': { lines: 95, functions: 95, branches: 90, statements: 95 },
         'scripts/**': { lines: 95, functions: 95, branches: 95, statements: 95 },
         // Whole app: just below today's level (the UI has no tests yet).
-        lines: 35,
+        lines: 36,
       },
     },
   },

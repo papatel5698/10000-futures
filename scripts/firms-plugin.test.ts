@@ -95,4 +95,18 @@ describe('firmsPlugin', () => {
     expect(data.firms[0].name).toBe('Default')
     expect(plugin.load('other')).toBeUndefined()
   })
+  const html = '<head><meta name="description" content="A Monte Carlo retirement planner." /><title>10,000 Futures</title></head>'
+
+  it('puts the firm name in the page title and description of a locked build', () => {
+    const dir = fixture({ 'alpha.json': cfg('Alpha & Co') })
+    const out = firmsPlugin({ dir, envFirm: 'alpha' }).transformIndexHtml(html)
+    expect(out).toContain('<title>Alpha &amp; Co · Retirement planner</title>')
+    expect(out).toContain('content="Alpha &amp; Co retirement planner: see 10,000 possible futures for your savings."')
+    expect(out).not.toContain('Monte Carlo retirement planner.')
+  })
+
+  it('leaves the page title alone when not locked', () => {
+    const dir = fixture({ 'alpha.json': cfg('Alpha') })
+    expect(firmsPlugin({ dir, envFirm: undefined }).transformIndexHtml(html)).toBe(html)
+  })
 })

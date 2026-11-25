@@ -53,9 +53,23 @@ export function readFirms(dir: string, envFirm: string | undefined): BundledFirm
 const VIRTUAL = 'virtual:firms'
 const RESOLVED = '\0' + VIRTUAL
 
+const escapeHtml = (s: string) =>
+  s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;')
+
 export function firmsPlugin(opts: { dir: string; envFirm: string | undefined }) {
   return {
     name: 'firms',
+    /** A build locked to one firm gets its name in the static title and description (link previews, crawlers). */
+    transformIndexHtml(html: string) {
+      if (!opts.envFirm) return html
+      const name = escapeHtml(readFirms(opts.dir, opts.envFirm).firms[0].name)
+      return html
+        .replace(/<title>[^<]*<\/title>/, `<title>${name} · Retirement planner</title>`)
+        .replace(
+          /(<meta name="description" content=")[^"]*(")/,
+          `$1${name} retirement planner: see 10,000 possible futures for your savings.$2`,
+        )
+    },
     resolveId(id: string) {
       return id === VIRTUAL ? RESOLVED : undefined
     },
