@@ -46,6 +46,14 @@ describe('Methodology with a finished plan', () => {
   })
 })
 
+describe('Methodology with a half-finished plan', () => {
+  it('uses the example spending, not a partial answer, alongside the example ages', () => {
+    render(<Methodology plan={{ ...EMPTY_PLAN, monthlySpending: 8_000 }} />)
+    expect(screen.getByText(/Example using \$5,000 a month/)).toBeTruthy()
+    expect(screen.queryByText(/\$8,000/)).toBeNull()
+  })
+})
+
 describe('Methodology before a plan exists', () => {
   it('uses the defaults and an example spending level', () => {
     render(<Methodology plan={EMPTY_PLAN} />)

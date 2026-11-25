@@ -12,7 +12,7 @@ export function Methodology({ plan }: Props) {
   const m = plan.market
   const r = yearlyReturnRange(m)
   const yours = isComplete(plan)
-  const monthly = plan.monthlySpending ?? 5_000
+  const monthly = yours ? plan.monthlySpending! : 5_000
   const target = fiTarget(monthly * 12, plan.withdrawalRate, plan.taxRate)
   const exampleHorizon = yours ? chartHorizon(plan.age!, plan.retireAge!) : chartHorizon(35, 60)
 

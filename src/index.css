@@ -58,6 +58,7 @@ button { font: inherit; }
 }
 .topbar { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding-block: 20px; }
 .nav-link, .back { font-weight: 600; font-size: 14px; }
+.back { align-self: flex-start; }
 .brand { display: inline-flex; align-items: center; gap: 10px; font-weight: 700; letter-spacing: -0.01em; }
 .mark {
   width: 22px; height: 22px; border-radius: 50%;
