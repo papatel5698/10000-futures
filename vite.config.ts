@@ -18,10 +18,9 @@ export default defineConfig({
         // Plan state and formatting are plain logic too.
         'src/format.ts': { lines: 95, functions: 95, branches: 95, statements: 95 },
         'src/state/**': { lines: 95, functions: 95, branches: 90, statements: 95 },
-        // Whole app: just below today's level (the UI has no tests yet).
-        // Reset from 36 to 24 in #20 because removing the well-tested per-firm config lowered the
-        // percentage; no remaining code lost tests. Owner-approved one-time exception: floors only go up.
-        lines: 24,
+        // Whole app: just below today's level.
+        // (Reset from 36 to 24 once in #20, owner-approved, when the per-firm config was removed.)
+        lines: 62,
       },
     },
   },
