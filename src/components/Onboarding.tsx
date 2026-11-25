@@ -1,6 +1,8 @@
 import { useState, type ReactNode } from 'react'
 import { type Plan, EXAMPLE_PLAN, totalBalance } from '../state/plan'
 import { MoneyInput, NumberInput } from './MoneyInput'
+import { BalancesImport } from './BalancesImport'
+import { BALANCE_LABELS } from '../import/balances'
 import { compact, money } from '../format'
 
 interface Props {
@@ -106,10 +108,11 @@ export function Onboarding({ plan, setPlan, onFinish, startAt = 0 }: Props) {
       why: 'Count retirement and investment accounts. Leave out checking, savings and emergency cash. Blank means $0.',
       body: (
         <div className="field-grid">
-          <MoneyInput id="b-work" label="401(k) / 403(b)" value={plan.balances.workplace} onChange={(v) => setBal('workplace', v)} autoFocus />
-          <MoneyInput id="b-ira" label="IRA / Roth IRA" value={plan.balances.ira} onChange={(v) => setBal('ira', v)} />
-          <MoneyInput id="b-brk" label="Brokerage" value={plan.balances.brokerage} onChange={(v) => setBal('brokerage', v)} />
-          <MoneyInput id="b-oth" label="Other investments" value={plan.balances.other} onChange={(v) => setBal('other', v)} />
+          <BalancesImport onImport={(b) => set({ balances: { ...plan.balances, ...b } })} />
+          <MoneyInput id="b-work" label={BALANCE_LABELS.workplace} value={plan.balances.workplace} onChange={(v) => setBal('workplace', v)} autoFocus />
+          <MoneyInput id="b-ira" label={BALANCE_LABELS.ira} value={plan.balances.ira} onChange={(v) => setBal('ira', v)} />
+          <MoneyInput id="b-brk" label={BALANCE_LABELS.brokerage} value={plan.balances.brokerage} onChange={(v) => setBal('brokerage', v)} />
+          <MoneyInput id="b-oth" label={BALANCE_LABELS.other} value={plan.balances.other} onChange={(v) => setBal('other', v)} />
           <p className="tally">Total invested: <strong>{money(totalBalance(plan))}</strong></p>
         </div>
       ),

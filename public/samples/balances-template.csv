@@ -1,0 +1,5 @@
+account_type,balance,name
+workplace,0,Workplace 401(k) or 403(b)
+ira,0,IRA or Roth IRA
+brokerage,0,Brokerage account
+other,0,Other investments

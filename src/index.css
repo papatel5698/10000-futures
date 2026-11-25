@@ -181,6 +181,11 @@ a { color: var(--accent); text-underline-offset: 3px; }
 .figures strong { font-family: var(--mono); font-size: 22px; font-weight: 500; }
 .formula { font-family: var(--mono); font-size: 16px; background: var(--band); border-radius: 10px; padding: 12px 14px; overflow-x: auto; }
 
+.import { grid-column: 1 / -1; display: flex; flex-direction: column; gap: 8px; padding: 14px; border: 1px dashed var(--line); border-radius: 10px; }
+.import label { font-weight: 600; }
+.import-list, .import-errors { margin: 0; padding-left: 20px; font-size: 14px; }
+.import-errors { color: var(--warn); }
+
 .assumptions dl { margin: 0; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px 28px; }
 .assumptions dt { font-weight: 700; margin-bottom: 4px; }
 .assumptions dd { margin: 0; color: var(--muted); font-size: 15px; }
