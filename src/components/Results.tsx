@@ -7,7 +7,7 @@ import {
   simulate,
   type MarketAssumptions,
 } from '../sim/montecarlo'
-import { type Plan, totalBalance } from '../state/plan'
+import { type Plan, chartHorizon, totalBalance } from '../state/plan'
 import { compact, money, pct } from '../format'
 import { FanChart } from './FanChart'
 
@@ -51,7 +51,7 @@ export function Results({ plan, setPlan, onEdit, onReset }: Props) {
   const takeHome = plan.takeHome!
   const workplace = plan.workplaceContribution!
   const start = totalBalance(plan)
-  const horizon = Math.min(60, Math.max(retireAge, 65) + 5 - age)
+  const horizon = chartHorizon(age, retireAge)
   const retireYears = retireAge - age
 
   const set = (patch: Partial<Plan>) => setPlan({ ...plan, ...patch })
@@ -216,6 +216,7 @@ export function Results({ plan, setPlan, onEdit, onReset }: Props) {
           <div><dt>Not included</dt><dd>Social Security, pensions, fees, taxes on investments before retirement, raises, job changes, and early-withdrawal rules for retirement accounts before age 59½.</dd></div>
         </dl>
         <p className="fine">An educational projection, not financial advice. Real markets have fatter tails and longer slumps than a simple random model, so treat the low lines as plausible, not worst case.</p>
+        <p><a href="#/methodology">Read the full methodology →</a></p>
       </section>
     </main>
   )

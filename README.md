@@ -22,7 +22,9 @@ Everything runs in the browser. Answers are saved only in the visitor's `localSt
 | Percentiles | 50th / 25th / 10th of the 10,000 runs, labeled average / below average / very below average. |
 | FI target | `yearly spending ÷ (1 − tax on withdrawals) ÷ withdrawal rate` |
 
-Draws use a seeded PRNG (mulberry32 + Box–Muller), so results are stable while sliders move. Not modeled: Social Security, fees, taxes before retirement, glide-path allocation changes, early-withdrawal rules.
+Draws use a seeded PRNG (mulberry32 + Box–Muller) laid out on a fixed 60-year stride per run, so the same 10,000 futures are reused while any slider moves, including a retirement age that lengthens the chart. Not modeled: Social Security, fees, taxes before retirement, glide-path allocation changes, early-withdrawal rules.
+
+The app's **methodology page** ([`#/methodology`](https://papatel5698.github.io/10000-futures/#/methodology), linked from the top bar and the results) explains all of this in plain language. Its numbers (the blended return and volatility, what a typical, bad and good year look like, the FI target) are computed from the visitor's current plan, or the defaults, by the same code that draws the chart.
 
 ## Project layout
 
@@ -33,7 +35,10 @@ src/state/plan.ts           plan model + localStorage persistence
 src/state/plan.test.ts      plan persistence tests
 src/format.ts               money, percent and input-parsing helpers
 src/format.test.ts          formatting tests
-src/components/             onboarding flow, results dashboard, fan chart
+src/components/             onboarding flow, results dashboard, fan chart, methodology page
+src/components/*.test.tsx   component tests (React Testing Library in jsdom)
+src/methodology.ts          methodology numbers (return range for a mix) and hash routing
+src/App.test.tsx            routing between the planner and #/methodology
 docs/brief.md               product brief: user, problem, success metrics
 docs/decisions/             decision records
 ```
@@ -52,6 +57,8 @@ npm run build   # production build in dist/
 ## CI and test-driven development
 
 Every pull request and push to `main` runs `.github/workflows/ci.yml`: lint, tests with coverage, and a production build. Coverage floors live in `vite.config.ts`: the simulation engine (`src/sim/`), plan state (`src/state/`) and formatting (`src/format.ts`) must stay at 95%+, and the whole app may not drop below today's level. Floors only go up.
+
+Component tests run in jsdom with React Testing Library: add `// @vitest-environment jsdom` at the top of a `*.test.tsx` file. Unit tests for plain modules stay in the default Node environment.
 
 Work is test-first: write a failing test, then the code that makes it pass. `.github/workflows/tests-required.yml` enforces the visible part: a PR that changes TypeScript under `src/` must also change a `*.test.ts(x)` file. For a change that truly needs no test, add the `no-tests-needed` label and explain why in the PR.
 

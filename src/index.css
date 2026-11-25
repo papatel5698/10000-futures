@@ -56,7 +56,9 @@ button { font: inherit; }
   margin: 0 auto;
   padding: 0 max(16px, env(safe-area-inset-right)) 64px max(16px, env(safe-area-inset-left));
 }
-.topbar { display: flex; align-items: center; padding-block: 20px; }
+.topbar { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding-block: 20px; }
+.nav-link, .back { font-weight: 600; font-size: 14px; }
+.back { align-self: flex-start; }
 .brand { display: inline-flex; align-items: center; gap: 10px; font-weight: 700; letter-spacing: -0.01em; }
 .mark {
   width: 22px; height: 22px; border-radius: 50%;
@@ -166,13 +168,26 @@ td { font-family: var(--mono); font-variant-numeric: tabular-nums; }
 tr.current td { background: var(--band); }
 .pill { margin-left: 8px; font-family: var(--display); font-size: 11.5px; padding: 2px 8px; border-radius: 999px; background: var(--accent); color: var(--accent-ink); }
 
+a { color: var(--accent); text-underline-offset: 3px; }
+
+.method { display: flex; flex-direction: column; gap: 18px; padding-top: 12px; max-width: 820px; }
+.method-title { font-size: clamp(32px, 5vw, 48px); font-weight: 700; letter-spacing: -0.02em; }
+.method ul { margin: 0; padding-left: 20px; display: flex; flex-direction: column; gap: 6px; }
+.method table { min-width: 0; }
+.method td:first-child { font-family: var(--display); }
+.method .figures { list-style: none; padding: 0; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; }
+.figures li { background: var(--band); border-radius: 10px; padding: 12px 14px; display: flex; flex-direction: column; gap: 4px; }
+.figures span { font-size: 13px; color: var(--muted); }
+.figures strong { font-family: var(--mono); font-size: 22px; font-weight: 500; }
+.formula { font-family: var(--mono); font-size: 16px; background: var(--band); border-radius: 10px; padding: 12px 14px; overflow-x: auto; }
+
 .assumptions dl { margin: 0; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px 28px; }
 .assumptions dt { font-weight: 700; margin-bottom: 4px; }
 .assumptions dd { margin: 0; color: var(--muted); font-size: 15px; }
 
 @media (max-width: 860px) {
   .workspace { grid-template-columns: 1fr; }
-  .cards, .promises, .assumptions dl { grid-template-columns: 1fr; }
+  .cards, .promises, .assumptions dl, .method .figures { grid-template-columns: 1fr; }
   .chart { height: 320px; }
 }
 @media (max-width: 520px) {

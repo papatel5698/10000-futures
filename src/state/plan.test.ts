@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { DEFAULT_MARKET } from '../sim/montecarlo'
-import { EMPTY_PLAN, EXAMPLE_PLAN, clearPlan, isComplete, loadPlan, savePlan, totalBalance } from './plan'
+import { EMPTY_PLAN, EXAMPLE_PLAN, chartHorizon, clearPlan, isComplete, loadPlan, savePlan, totalBalance } from './plan'
 
 const KEY = 'ten-thousand-futures:plan:v1'
 
@@ -31,6 +31,18 @@ describe('EMPTY_PLAN and EXAMPLE_PLAN', () => {
   it('example plan is complete', () => {
     expect(isComplete(EXAMPLE_PLAN)).toBe(true)
     expect(totalBalance(EXAMPLE_PLAN)).toBe(25_000)
+  })
+})
+
+describe('chartHorizon', () => {
+  it('runs five years past 65, or past the retirement age if later', () => {
+    expect(chartHorizon(30, 55)).toBe(40)
+    expect(chartHorizon(30, 68)).toBe(43)
+  })
+
+  it('never runs more than 60 years', () => {
+    expect(chartHorizon(20, 65)).toBe(50)
+    expect(chartHorizon(18, 80)).toBe(60)
   })
 })
 

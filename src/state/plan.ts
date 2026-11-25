@@ -38,6 +38,9 @@ export const EXAMPLE_PLAN: Plan = {
   monthlySpending: 10_000,
 }
 
+/** Years the chart and simulation cover: to 5 years past 65 (or past retirement, if later), at most 60. */
+export const chartHorizon = (age: number, retireAge: number) => Math.min(60, Math.max(retireAge, 65) + 5 - age)
+
 export const totalBalance = (p: Plan) =>
   Object.values(p.balances).reduce<number>((a, b) => a + (b ?? 0), 0)
 
