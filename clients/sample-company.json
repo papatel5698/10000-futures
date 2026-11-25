@@ -1,0 +1,15 @@
+{
+  "name": "Sample Company Planning",
+  "logo": "sample-company.svg",
+  "colors": { "accent": "#1d4e89", "accentDark": "#7fb0e8" },
+  "assumptions": {
+    "stockShare": 0.8,
+    "stockReturn": 0.06,
+    "stockVol": 0.17,
+    "bondReturn": 0.02,
+    "bondVol": 0.06,
+    "correlation": 0.1,
+    "withdrawalRate": 0.035,
+    "taxRate": 0.15
+  }
+}

@@ -1,19 +1,21 @@
 import { useEffect, useState } from 'react'
 import { Onboarding } from './components/Onboarding'
 import { Results } from './components/Results'
-import { EMPTY_PLAN, clearPlan, isComplete, loadPlan, savePlan, type Plan } from './state/plan'
+import { DEFAULT_FIRM_ID, type FirmConfig } from './config/firm'
+import { clearPlan, emptyPlan, examplePlan, isComplete, loadPlan, savePlan, type Plan } from './state/plan'
 
 type View = { name: 'onboarding'; startAt: number } | { name: 'results' }
 
-export default function App() {
-  const [plan, setPlan] = useState<Plan>(() => loadPlan() ?? EMPTY_PLAN)
+export default function App({ firm }: { firm: FirmConfig }) {
+  const [blank] = useState<Plan>(() => emptyPlan(firm.assumptions))
+  const [plan, setPlan] = useState<Plan>(() => loadPlan(firm.id, firm.assumptions) ?? blank)
   const [view, setView] = useState<View>(() =>
     isComplete(plan) ? { name: 'results' } : { name: 'onboarding', startAt: 0 },
   )
 
   useEffect(() => {
-    if (plan !== EMPTY_PLAN) savePlan(plan)
-  }, [plan])
+    if (plan !== blank) savePlan(firm.id, plan, firm.assumptions)
+  }, [plan, blank, firm.id, firm.assumptions])
 
   useEffect(() => {
     window.scrollTo({ top: 0 })
@@ -23,9 +25,10 @@ export default function App() {
     <div className="app">
       <nav className="topbar">
         <span className="brand">
-          <span className="mark" aria-hidden="true" />
-          10,000 Futures
+          {firm.logo ? <img className="logo" src={firm.logo} alt="" /> : <span className="mark" aria-hidden="true" />}
+          {firm.name}
         </span>
+        {firm.id !== DEFAULT_FIRM_ID && <span className="powered">Powered by 10,000 Futures</span>}
       </nav>
       {view.name === 'results' && isComplete(plan) ? (
         <Results
@@ -33,8 +36,8 @@ export default function App() {
           setPlan={setPlan}
           onEdit={() => setView({ name: 'onboarding', startAt: 1 })}
           onReset={() => {
-            clearPlan()
-            setPlan(EMPTY_PLAN)
+            clearPlan(firm.id)
+            setPlan(blank)
             setView({ name: 'onboarding', startAt: 0 })
           }}
         />
@@ -43,6 +46,7 @@ export default function App() {
           key={view.name === 'onboarding' ? view.startAt : 0}
           plan={plan}
           setPlan={setPlan}
+          example={examplePlan(firm.assumptions)}
           startAt={view.name === 'onboarding' ? view.startAt : 0}
           onFinish={() => setView({ name: 'results' })}
         />

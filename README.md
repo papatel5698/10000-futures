@@ -29,10 +29,57 @@ Draws use a seeded PRNG (mulberry32 + Box–Muller), so results are stable while
 ```
 src/sim/montecarlo.ts       pure simulation engine (no React)
 src/sim/montecarlo.test.ts  Vitest unit tests
-src/state/plan.ts           plan model + localStorage persistence
+src/state/plan.ts           plan model + localStorage persistence (one saved plan per firm)
+src/config/firm.ts          firm config validation, firm selection, theme colors
 src/components/             onboarding flow, results dashboard, fan chart
+clients/<firm>.json         one config per firm (plus an optional <firm>.svg/.png logo)
+scripts/firms-plugin.ts     Vite plugin: validates clients/ and bundles it as virtual:firms
 docs/brief.md               engagement brief: client, problem, success metrics
+docs/decisions/             decision records
 ```
+
+## Per-firm config
+
+Each advisory firm gets its own name, logo, colors and planning assumptions from `clients/<firm>.json`. The repo ships three:
+
+| Config | Firm | Assumptions |
+| --- | --- | --- |
+| `default` | 10,000 Futures (unbranded) | 90/10 mix, 6.5% stocks, 4% withdrawal rate, 10% tax |
+| `sample-company` | Sample Company Planning (fictional) | 80/20 mix, 6% stocks, 3.5% withdrawal rate, 15% tax |
+| `example-wealth` | Example Wealth Partners (fictional) | 60/40 mix, 5% stocks, 3.25% withdrawal rate, 20% tax |
+
+**Choosing a firm.**
+
+- On the demo site, add `?firm=<id>`, e.g. [`?firm=sample-company`](https://papatel5698.github.io/10000-futures/?firm=sample-company) or [`?firm=example-wealth`](https://papatel5698.github.io/10000-futures/?firm=example-wealth). An unknown id falls back to `default`.
+- For a firm's own deployment, build with `FIRM=<id> npm run build`. Only that firm's config goes into the bundle and `?firm=` is ignored, so a client's site never ships another client's name or branding. An unknown `FIRM` fails the build.
+
+Each firm's saved plan is kept separately in the browser, so switching firms never mixes plans or assumptions. When a firm changes its config, returning clients keep their answers but start from the new assumptions. Why it works this way: [docs/decisions/001-firm-selection.md](docs/decisions/001-firm-selection.md).
+
+**Config format.** Only `name` and `colors.accent` are required. Any assumption left out uses the default. Rates are fractions (6.5% is `0.065`).
+
+```json
+{
+  "name": "Sample Company Planning",
+  "logo": "sample-company.svg",
+  "colors": { "accent": "#1d4e89", "accentDark": "#7fb0e8" },
+  "assumptions": {
+    "stockShare": 0.8, "stockReturn": 0.06, "stockVol": 0.17,
+    "bondReturn": 0.02, "bondVol": 0.06, "correlation": 0.1,
+    "withdrawalRate": 0.035, "taxRate": 0.15
+  }
+}
+```
+
+| Field | Notes |
+| --- | --- |
+| `name` | Shown in the top bar and the page title. |
+| `logo` | Optional. A `.svg` or `.png` file name in `clients/`. It's inlined into the build. Without one, the default mark is shown. |
+| `colors.accent` / `accentDark` | Hex accent for light and dark mode (`accentDark` defaults to `accent`). Text on the accent is picked automatically for contrast. |
+| `assumptions.*` | Starting values for the market sliders, withdrawal rate and tax on withdrawals. Each must fit its slider's range (`ASSUMPTION_RANGES` in `src/config/firm.ts`, e.g. stock return 3–9%, withdrawal rate 2.5–5%), so `6.5` instead of `0.065` fails the build. |
+
+The config is checked when the app builds (and in `scripts/firms-plugin.test.ts`, which also validates every shipped config). A typo fails the build with the file and field named, instead of breaking the page. Advisors can still move the sliders during a meeting; the config sets where they start. A build with `FIRM` set also puts the firm's name in the static page title and description, for link previews.
+
+The dev server reads `clients/` when it starts, so restart `npm run dev` after editing a config or logo.
 
 ## Develop
 
