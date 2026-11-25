@@ -26,6 +26,19 @@ Draws use a seeded PRNG (mulberry32 + Box–Muller) laid out on a fixed 60-year 
 
 The app's **methodology page** ([`#/methodology`](https://papatel5698.github.io/10000-futures/#/methodology), linked from the top bar and the results) explains all of this in plain language. Its numbers (the blended return and volatility, what a typical, bad and good year look like, the FI target) are computed from the visitor's current plan, or the defaults, by the same code that draws the chart.
 
+## Importing balances
+
+On the "What do you have invested today?" step, **Import balances from a CSV** fills in the balance fields. The file is read in the browser and never uploaded. Account types found in the file replace those fields, even with $0; fields for types not in the file keep what you typed. Choosing the same file again re-imports it. The app lists each imported account, which field it went to, and any rows it couldn't read (with line numbers).
+
+Two formats are recognized from the header row:
+
+| Format | Header must include | Rows |
+| --- | --- | --- |
+| Template ([download](public/samples/balances-template.csv)) | `account_type`, `balance` (optional `name`) | One per account. `account_type` is `workplace`, `ira`, `brokerage` or `other`; aliases like `401k`, `403b`, `roth`, `taxable` and `hsa` work. |
+| Brokerage positions export | `Account Name`, `Current Value` | One per holding. Holdings are added up per account (by `Account Number` when present, so two accounts with the same name stay separate), and the account name decides the type: 401(k)/403(b)/457/TSP → workplace, IRA/Roth/SEP/Individual Retirement → IRA, Individual/Joint/Brokerage/Taxable/Trust → brokerage, anything else → other. Blank values and `--` are skipped, and one-cell disclaimer lines at the bottom are ignored. |
+
+Amounts may include `$` and thousands commas; a negative amount has a leading minus (`-$100`, `$-100`) or parentheses (`($100)`), so something like `1-2` is reported as a bad row instead of being misread. A quote that is never closed is reported with the line it opened on. Files over 1 MB are refused. The positions format follows the common layout of brokerage "positions" downloads; the fixture in `src/import/fixtures/` is synthetic, so a real export with different column names needs a new mapping ([decision 003](docs/decisions/003-csv-import-formats.md)).
+
 ## Project layout
 
 ```
@@ -38,6 +51,8 @@ src/format.test.ts          formatting tests
 src/components/             onboarding flow, results dashboard, fan chart, methodology page
 src/components/*.test.tsx   component tests (React Testing Library in jsdom)
 src/methodology.ts          methodology numbers (return range for a mix) and hash routing
+src/import/                 balances CSV import: CSV parser, formats, fixtures
+public/samples/             downloadable balances template
 src/App.test.tsx            routing between the planner and #/methodology
 docs/brief.md               product brief: user, problem, success metrics
 docs/decisions/             decision records

@@ -1,0 +1,10 @@
+﻿Account Number,Account Name,Symbol,Description,Quantity,Last Price,Current Value,Percent Of Account
+X11111111,Individual,VTI,VANGUARD TOTAL STOCK MARKET ETF,100,$250.10,"$25,010.00",80.00%
+X11111111,Individual,SPAXX**,HELD IN MONEY MARKET,,,"$6,252.50",20.00%
+222222222,ROTH IRA,FXAIX,FIDELITY 500 INDEX FUND,50,$190.00,"$9,500.00",100.00%
+33333,ACME CORP 401(K) PLAN,TDF2055,TARGET DATE 2055,1000,$61.25,"$61,250.00",100.00%
+44444,Health Savings Account,VTSAX,VANGUARD TOTAL STOCK MKT IDX ADM,10,$120.00,"$1,200.00",100.00%
+X11111111,Individual,,Pending Activity,,,"-$100.00",
+
+"The data and information in this spreadsheet is provided to you solely for your use."
+"Date downloaded Nov-25-2026 4:15 p.m ET"

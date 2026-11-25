@@ -17,10 +17,11 @@ export default defineConfig({
         'src/sim/**': { lines: 95, functions: 95, branches: 90, statements: 95 },
         // Plan state and formatting are plain logic too.
         'src/format.ts': { lines: 95, functions: 95, branches: 95, statements: 95 },
+        'src/import/**': { lines: 95, functions: 95, branches: 90, statements: 95 },
         'src/state/**': { lines: 95, functions: 95, branches: 90, statements: 95 },
         // Whole app: just below today's level.
         // (Reset from 36 to 24 once in #20, owner-approved, when the per-firm config was removed.)
-        lines: 89,
+        lines: 94,
       },
     },
   },
