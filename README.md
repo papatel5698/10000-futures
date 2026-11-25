@@ -30,6 +30,9 @@ Draws use a seeded PRNG (mulberry32 + Box–Muller), so results are stable while
 src/sim/montecarlo.ts       pure simulation engine (no React)
 src/sim/montecarlo.test.ts  Vitest unit tests
 src/state/plan.ts           plan model + localStorage persistence
+src/state/plan.test.ts      plan persistence tests
+src/format.ts               money, percent and input-parsing helpers
+src/format.test.ts          formatting tests
 src/components/             onboarding flow, results dashboard, fan chart
 docs/brief.md               product brief: user, problem, success metrics
 docs/decisions/             decision records
@@ -48,7 +51,7 @@ npm run build   # production build in dist/
 
 ## CI and test-driven development
 
-Every pull request and push to `main` runs `.github/workflows/ci.yml`: lint, tests with coverage, and a production build. Coverage floors live in `vite.config.ts`: the simulation engine (`src/sim/`) must stay at 95%+ and the whole app may not drop below today's level. Floors only go up.
+Every pull request and push to `main` runs `.github/workflows/ci.yml`: lint, tests with coverage, and a production build. Coverage floors live in `vite.config.ts`: the simulation engine (`src/sim/`), plan state (`src/state/`) and formatting (`src/format.ts`) must stay at 95%+, and the whole app may not drop below today's level. Floors only go up.
 
 Work is test-first: write a failing test, then the code that makes it pass. `.github/workflows/tests-required.yml` enforces the visible part: a PR that changes TypeScript under `src/` must also change a `*.test.ts(x)` file. For a change that truly needs no test, add the `no-tests-needed` label and explain why in the PR.
 

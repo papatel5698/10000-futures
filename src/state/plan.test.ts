@@ -38,6 +38,18 @@ describe('isComplete', () => {
   it('needs a retirement age after the current age', () => {
     expect(isComplete({ ...EXAMPLE_PLAN, retireAge: EXAMPLE_PLAN.age })).toBe(false)
   })
+
+  it.each(['age', 'retireAge', 'workplaceContribution', 'takeHome', 'monthlySpending'] as const)(
+    'needs %s',
+    (field) => {
+      expect(isComplete({ ...EXAMPLE_PLAN, [field]: null })).toBe(false)
+    },
+  )
+
+  it('fills in balances missing from a saved plan', () => {
+    localStorage.setItem(KEY, JSON.stringify({ age: 30 }))
+    expect(loadPlan()!.balances).toEqual(EMPTY_PLAN.balances)
+  })
 })
 
 describe('persistence', () => {

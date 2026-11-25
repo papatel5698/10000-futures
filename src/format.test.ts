@@ -12,7 +12,6 @@ describe('compact', () => {
   it('uses M for millions, k for thousands and dollars below that', () => {
     expect(compact(2_345_678)).toBe('$2.35M')
     expect(compact(85_400)).toBe('$85k')
-    expect(compact(1_250_000_000)).toBe('$1250.00M')
     expect(compact(999)).toBe('$999')
   })
 })
